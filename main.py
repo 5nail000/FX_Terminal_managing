@@ -106,7 +106,7 @@ async def read_root(request: Request):
 def show_account(account_login: int, request: Request, db: Session = Depends(get_db)):
     
     # Получаем текущую дату
-    current_date = datetime.utcnow()
+    current_date = datetime.now()
     # Находим первый и последний день текущего месяца
     first_day_of_month = current_date.replace(day=1)
     

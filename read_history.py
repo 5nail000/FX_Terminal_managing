@@ -221,7 +221,7 @@ def generate_plot(account_id, trade_history):
     # Преобразуем данные в DataFrame
     data = {
         'date': [acc.time_out for acc in trade_history],  # Убедитесь, что используете корректное поле даты
-        'balance': [acc.balance_end for acc in trade_history],
+        'balance': [round(acc.balance_end) for acc in trade_history],
         'drawdown': [acc.balance_end - acc.draw_down for acc in trade_history],
         'max_drawdown': [acc.draw_down_level + acc.margin_load for acc in trade_history],
     }
@@ -248,17 +248,19 @@ def generate_plot(account_id, trade_history):
     ax1.plot(df['date'], df['balance'], label='Balance, $', color='blue')
     ax1.plot(df['date'], df['drawdown'], label='Drawdown', color='green', alpha=0.5)
     ax1.set_ylabel('Balance', color='blue')
-    ax1.set_ylim([balance_offset, df['balance'].max() * 1.05])  # Масштабирование от минимального значения + немного запаса
+    ax1.set_ylim([balance_offset, df['balance'].max() * 1.15])  # Масштабирование от минимального значения + немного запаса
     ax1.tick_params(axis='y', labelcolor='blue')
     ax1.grid(True)
     ax1.legend(loc='upper left')
-    ax1.set_title('Balance Over Time')
+    # ax1.set_title('Balance Over Time')
 
     # Добавление вертикальных линий на каждый понедельник
     for monday in mondays:
         saturday = monday - pd.DateOffset(days=2)
         # ax1.axvline(monday, color='purple', linestyle='--', label=None, alpha=0.65)
         ax1.axvspan(saturday, monday, color='red', alpha=0.1875)
+
+    draw_plots(df, ax1)    
 
     # Линии max_drawdown и margin_load на отдельной оси
     ax2.plot(df['date'], df['max_drawdown'], label='Deposit Load, %', color='red', alpha=0.4)
@@ -270,6 +272,7 @@ def generate_plot(account_id, trade_history):
 
     # Общий заголовок для всего графика
     # fig.suptitle(f'Account Balance Chart for Account ID: {account_id}')
+
 
     # Сохранение графика в формате base64
     buffer = BytesIO()
@@ -291,6 +294,44 @@ def generate_plot(account_id, trade_history):
 
     plt.ion()
     return image_base64
+
+
+def draw_plots(df, ax1):
+    # Получение первого значения
+    first_date = df['date'].iloc[0]
+    first_balance = df['balance'].iloc[0]
+
+    # Добавление аннотации для первого значения
+    formatted_number = f'{first_balance:,.0f}'.replace(',', ' ')
+    ax1.annotate(f"${formatted_number}",
+                 xy=(first_date, first_balance), 
+                 xytext=(first_date, first_balance * 1.06),
+                 horizontalalignment='center',
+                 color='darkblue',
+                 fontweight='bold',
+                 verticalalignment='top')
+
+    # Добавление выделенной точки на первое значение
+    ax1.scatter([first_date], [first_balance], color='darkblue')
+    ax1.plot(first_date, first_balance, 'ko', markersize=10, fillstyle='none')
+
+    # Получение последнего значения
+    first_date = df['date'].iloc[-1]
+    first_balance = df['balance'].iloc[-1]
+
+    # Добавление аннотации для первого значения
+    formatted_number = f'{first_balance:,.0f}'.replace(',', ' ')
+    ax1.annotate(f"${formatted_number}",
+                 xy=(first_date, first_balance), 
+                 xytext=(first_date, first_balance * 0.94),
+                 horizontalalignment='center',
+                 color='darkblue',
+                 fontweight='bold',
+                 verticalalignment='top')
+    
+    # Добавление выделенной точки на первое значение
+    ax1.scatter([first_date], [first_balance], color='darkblue')
+    ax1.plot(first_date, first_balance, 'ko', markersize=10, fillstyle='none')
 
 
 if __name__ == "__main__":
