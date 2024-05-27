@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}History{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2>Trading History of {{login}}</h2>
+  <br>
+  <form id="data-form" method="post" action="/submit_history_data">
+    <input type="hidden" name="login" value="{{ login }}">
+    <input type="hidden" name="server" value="{{ server }}">
+    <input type="hidden" name="trade_history" value="{{ trade_history }}">
+    <!-- Дополнительные поля формы -->
+    <button type="submit">Внести новые данные в базу</button>
+</form>
+  <br><br>
+  <div class="d-flex justify-content-center">
+    <table class="table table-striped mx-auto">
+      <thead>
+          <tr>
+              <th>ID</th>
+              <th>Symbol</th>
+              <th>Lot</th>
+              <th>Type</th>
+
+              <th>Open Price</th>
+              <th>Close Price</th>
+              <th>Open Time</th>
+
+              <th>Close Time</th>
+              <th>Time Duration</th>
+              <th>Profit</th>
+              <th>Balance End</th>
+
+              <th>Comment</th>
+              <!-- Добавьте дополнительные заголовки столбцов в соответствии со словарем данные которые вы хотите отобразить -->
+          </tr>
+      </thead>
+      <tbody>
+          {% for position in trade_history %}
+          <tr>
+              <td>{{ position['id'] }}</td>
+              <td>{{ position['symbol'] }}</td>
+              <td>{{ position['volume_out'] | round(2) }}</td>
+              <td>
+                {% if position['type_out'] == 2 %}
+                    Deposit
+                {% elif position['type_out'] == 1 %}
+                    Buy
+                {% elif position['type_out'] == 0 %}
+                    Sell
+                {% else %}
+                    <!-- Ничего не выводим, если условие не соответствует значению 2, 1 или 0 -->
+                {% endif %}
+              </td>
+              {% if position['type_out'] != 2 %}
+              <td>{{ position['price_in'] | round(6) }}</td>
+              <td>{{ position['price_out'] | round(6) }}</td>
+              <td>{{ position['time_in'] }}</td>
+              {% else %}<td></td><td></td><td></td>{% endif %}
+
+              <td>{{ position['time_out'] }}</td>
+              <td>{{ position['time_duration'] }}</td>
+              <td>{{ position['profit'] | round(2) }}</td>
+              <td>{{ position['balance_end'] | round(2) }}</td>
+              {% if position['type_out'] != 2 %}
+              <td>{{ position['comment_in'] }}</td>
+              {% else %}<td></td>{% endif %}
+              <!-- Добавьте дополнительные ячейки данных в соответствии со словарем -->
+          </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.getElementById('data-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        const response = await fetch('/submit_history_data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        if (response.ok) {
+            const result = await response.json();
+            // Обновите страницу или отобразите сообщение
+            Swal.fire({
+                title: result.title,
+                text: result.message,
+                icon: 'success',
+            });
+            console.log(result);
+        } else {
+            Swal.fire({
+                title: 'Ошибка',
+                text: 'Ошибка при внесении данных в базу',
+                icon: 'error',
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-center" style="display: flex; flex-direction: column; align-items: center;">
+    <h1 style="width: 100%;">Account Balance Chart for: {{ account_login }}</h1>
+    <img src="data:image/png;base64,{{ image_base64 }}" />
+</div>
+{% endblock %}

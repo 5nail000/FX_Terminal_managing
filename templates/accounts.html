@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Accounts{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2>Accounts</h2>
+  <br>
+  <form id="account-form">
+    <button type="button" class="btn btn-primary btn-sm" id="add-account-btn">Добавить новый аккаунт</button>
+  </form>
+  <br><br>
+  <div class="d-flex justify-content-center" style="width: 800px;">
+    <table class="table table-striped mx-auto">
+      <thead>
+          <tr>
+              <th class="text-center align-middle">Active</th>
+              <th class="text-center align-middle">Title</th>
+              <th class="text-center align-middle">Login</th>
+              <th class="text-center align-middle">Description</th>
+          </tr>
+      </thead>
+      <tbody>
+          {% for account in accounts %}
+          <tr data-id="{{ account.id }}" data-title="{{ account.title }}" data-login="{{ account.login }}" data-password="{{ account.password }}" data-server="{{ account.server }}" data-description="{{ account.description }}" data-active="{{ account.active }}">
+              <td class="text-center align-middle"><input type="checkbox" class="account-active" data-id="{{ account.id }}" {{ 'checked' if account.active else '' }}></td>
+              <td><a class="" href="/account_chart/{{ account.login }}">{{ account.title }}</a></td>
+              <td><a class="" href="/account_chart/{{ account.login }}">{{ account.login }}</a></td>
+              <td>{{ account.description }}</td>
+              <td style="width: 100px;">
+                <!-- Действия, такие как редактирование или удаление аккаунта -->
+                <button class="btn btn-success btn-xs edit-btn">Edit</button>
+              </td>
+          </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Модальное окно для редактирования аккаунта -->
+<div class="modal fade" id="editAccountModal" tabindex="-1" aria-labelledby="editAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editAccountModalLabel">Edit Account</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-modal-btn"></button>
+        </div>
+        <div class="modal-body">
+          <form id="edit-account-form">
+            <input type="hidden" id="edit-account-id">
+            <div class="mb-3">
+              <label for="edit-account-title" class="form-label small">Title</label>
+              <input type="text" class="form-control small-input" id="edit-account-title" required>
+            </div>
+            <div class="mb-3">
+              <label for="edit-account-login" class="form-label small">Login</label>
+              <input type="text" class="form-control small-input" id="edit-account-login" required>
+            </div>
+            <div class="mb-3">
+                <label for="edit-account-password" class="form-label small">Password</label>
+                <input type="password" class="form-control small-input" id="edit-account-password" name="password" required>
+                <!-- <input text type="password" class="form-control small-input" id="edit-account-password" required> -->
+            </div>
+            <div class="mb-3">
+                <label for="edit-account-server" class="form-label small">Server</label>
+                <input text type="text" class="form-control small-input" id="edit-account-server" required>
+            </div>
+            <div class="mb-3">
+              <label for="edit-account-description" class="form-label small">Description</label>
+              <textarea class="form-control small-input" id="edit-account-description"></textarea>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="edit-account-active">
+              <label class="form-check-label small" for="edit-account-active">
+                Active
+              </label>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary btn-sm" id="footer-add-btn">Add Account</button>
+              <button type="submit" class="btn btn-primary btn-sm" id="footer-save-btn">Save changes</button>
+              <button type="button" class="btn btn-danger btn-sm" id="delete-account-btn">Delete</button>
+              <button type="button" class="btn btn-dark btn-sm" id="footer-close-btn">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.querySelectorAll('.account-active').forEach(checkbox => {
+        checkbox.addEventListener('change', async function() {
+            const accountId = this.dataset.id;
+            const isActive = this.checked;
+            try {
+                const response = await fetch('/update_account_status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: accountId, active: isActive })
+                });
+                if (!response.ok) throw new Error('Ошибка при обновлении статуса');
+                const result = await response.json();
+                window.location.reload();
+
+            } catch (error) {
+                Swal.fire({
+                    title: 'Ошибка',
+                    text: error.message,
+                    icon: 'error',
+                });
+                this.checked = !isActive;
+            }
+        });
+    });
+
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('tr');
+            const accountId = row.dataset.id;
+            const accountTitle = row.dataset.title;
+            const accountLogin = row.dataset.login;
+            const accountPassword = row.dataset.password;
+            const accountServer = row.dataset.server;
+            const accountDescription = row.dataset.description;
+            const accountActive = row.dataset.active.toLowerCase() === 'true';
+
+            document.getElementById('edit-account-id').value = accountId;
+            document.getElementById('edit-account-title').value = accountTitle;
+            document.getElementById('edit-account-login').value = accountLogin;
+            document.getElementById('edit-account-password').value = accountPassword;
+            document.getElementById('edit-account-server').value = accountServer;
+            document.getElementById('edit-account-description').value = accountDescription;
+            document.getElementById('edit-account-active').checked = accountActive;
+            document.getElementById('footer-add-btn').style.display = 'none';
+            document.getElementById('footer-save-btn').style.display = 'block';
+            document.getElementById('delete-account-btn').style.display = 'block';
+            
+
+            const editModal = new bootstrap.Modal(document.getElementById('editAccountModal'), {
+                keyboard: false
+            });
+            editModal.show();
+        });
+    });
+
+    document.getElementById('edit-account-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const accountId = document.getElementById('edit-account-id').value;
+        const accountTitle = document.getElementById('edit-account-title').value;
+        const accountLogin = document.getElementById('edit-account-login').value;
+        const accountPassword = document.getElementById('edit-account-password').value;
+        const accountServer = document.getElementById('edit-account-server').value;
+        const accountDescription = document.getElementById('edit-account-description').value;
+        const accountActive = document.getElementById('edit-account-active').checked;
+        
+        var fetch_url = document.getElementById('footer-add-btn').style.display == 'none' ? '/update_account' : '/create_new_account';
+
+        try {
+            const response = await fetch(fetch_url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: accountId,
+                    title: accountTitle,
+                    login: accountLogin,
+                    password: accountPassword,
+                    server: accountServer,
+                    description: accountDescription,
+                    active: accountActive
+                })
+            });
+            if (!response.ok) throw new Error('Ошибка при обновлении аккаунта');
+            
+            const responseData = await response.json();
+            Swal.fire({
+                title: responseData.title,  // Использование title из ответа сервера
+                text: responseData.text,  // Использование text из ответа сервера
+                icon: 'success',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.reload();
+                }
+            });
+        } catch (error) {
+            Swal.fire({
+                title: 'Ошибка',
+                text: error.message,
+                icon: 'error',
+            });
+        }
+    });
+
+    document.getElementById('delete-account-btn').addEventListener('click', async function() {
+        const accountId = document.getElementById('edit-account-id').value;
+        const result = await Swal.fire({
+            title: 'Вы уверены?',
+            text: 'Это действие нельзя отменить!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Да, удалить!',
+            cancelButtonText: 'Отмена'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch('/delete_account', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: accountId })
+                });
+                if (!response.ok) throw new Error('Ошибка при удалении аккаунта');
+                Swal.fire({
+                    title: 'Удалено!',
+                    text: 'Аккаунт успешно удален.',
+                    icon: 'success',
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.reload();
+                }
+            });
+            } catch (error) {
+                Swal.fire({
+                    title: 'Ошибка',
+                    text: error.message,
+                    icon: 'error',
+                });
+            }
+        }
+    });
+
+    // Обработчик для кнопки закрытия в заголовке модального окна
+    document.getElementById('close-modal-btn').addEventListener('click', function () {
+        var modal = bootstrap.Modal.getInstance(document.getElementById('editAccountModal'));
+        modal.hide();
+    });
+    // Обработчик для кнопки закрытия в заголовке модального окна
+    document.getElementById('footer-close-btn').addEventListener('click', function () {
+        var modal = bootstrap.Modal.getInstance(document.getElementById('editAccountModal'));
+        modal.hide();
+    });
+
+    // Обработчик для кнопки "Добавить новый аккаунт"
+    document.getElementById('add-account-btn').addEventListener('click', function () {
+        // Очистить форму перед открытием модального окна для добавления нового аккаунта
+        
+        document.getElementById('editAccountModalLabel').textContent = 'Adding New Account';
+        document.getElementById('edit-account-id').value = '';
+        document.getElementById('edit-account-title').value = 'new title';
+        document.getElementById('edit-account-login').value = '123456';
+        document.getElementById('edit-account-description').value = 'new description';
+        document.getElementById('edit-account-password').value = '';
+        document.getElementById('edit-account-server').value = '';
+        document.getElementById('edit-account-active').checked = false;
+        document.getElementById('delete-account-btn').style.display = 'none';
+        document.getElementById('footer-save-btn').style.display = 'none';
+        document.getElementById('footer-add-btn').style.display = 'block';
+
+        const editModal = new bootstrap.Modal(document.getElementById('editAccountModal'), {
+            keyboard: false
+        });
+        editModal.show();
+    });
+
+</script>
+{% endblock %}
+
+
+<style>
+{% block style %}
+    .btn-xs {
+        padding: 0.06rem 0.5rem;
+        font-size: 0.75rem;
+        line-height: 1.5;
+        border-radius: 0.2rem;
+    }
+    .small-input {
+        max-width: 350px; /* Установите максимальную ширину input-поля */
+        font-size: 0.75rem; /* Уменьшите размер шрифта */
+        margin-bottom: -0.5rem;
+    }
+    .modal-dialog {
+        max-width: 400px;  /* Установите максимальную ширину */
+    }
+    #password {
+        font-family: monospace;
+    }
+{% endblock %}
+</style>
