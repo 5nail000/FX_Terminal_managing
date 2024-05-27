@@ -126,10 +126,20 @@ def show_account(account_login: int, request: Request, db: Session = Depends(get
 
     # Создание будущего результата (future result) для выполнения в основном потоке
     future = executor.submit(generate_plot, account_login, trade_history).result()
-    # result = future.result()  # Ожидание завершения выполнения и получение результата
-    # return HTMLResponse(content=result)
 
-    return templates.TemplateResponse("account_chart.html", {"request": request, "image_base64": future, "account_login": account_login})
+    balance_in_str = f'$ {round(trade_history[0].balance_end):,.0f}'.replace(',', ' ')
+    balance_out_str = f'$ {round(trade_history[-1].balance_end):,.0f}'.replace(',', ' ')
+    result_str = f'$ {round(trade_history[-1].balance_end - trade_history[0].balance_end):,.0f}'.replace(',', ' ')
+    percent_str = f'{round((trade_history[-1].balance_end - trade_history[0].balance_end)/(trade_history[0].balance_end /100))} %'
+    account = {
+        'login': account_login,
+        'balance_in': balance_in_str,
+        'balance_out': balance_out_str,
+        'result': result_str,
+        'percent': percent_str,
+               }
+
+    return templates.TemplateResponse("account_chart.html", {"request": request, "image_base64": future, "account": account})
 
 
 @app.get("/accounts", response_class=HTMLResponse)

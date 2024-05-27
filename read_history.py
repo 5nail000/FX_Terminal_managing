@@ -239,7 +239,10 @@ def generate_plot(account_id, trade_history):
 
     # Минимальное значение для масштабирования баланса
     min_balance = df['drawdown'].min()
-    balance_offset = min_balance * 0.95  # 5% ниже минимального значения
+    balance_diff = df['balance'].max() - min_balance
+    balance_offset = min_balance - balance_diff*0.3  # 5% ниже минимального значения
+    print(min_balance)
+    print(balance_offset)
 
     # Построение графика
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10), gridspec_kw={'height_ratios': [3, 1]}, sharex=True)
@@ -248,7 +251,7 @@ def generate_plot(account_id, trade_history):
     ax1.plot(df['date'], df['balance'], label='Balance, $', color='blue')
     ax1.plot(df['date'], df['drawdown'], label='Drawdown', color='green', alpha=0.5)
     ax1.set_ylabel('Balance', color='blue')
-    ax1.set_ylim([balance_offset, df['balance'].max() * 1.15])  # Масштабирование от минимального значения + немного запаса
+    ax1.set_ylim([balance_offset, df['balance'].max() + balance_diff* 0.3])  # Масштабирование от минимального значения + немного запаса
     ax1.tick_params(axis='y', labelcolor='blue')
     ax1.grid(True)
     ax1.legend(loc='upper left')
@@ -260,7 +263,7 @@ def generate_plot(account_id, trade_history):
         # ax1.axvline(monday, color='purple', linestyle='--', label=None, alpha=0.65)
         ax1.axvspan(saturday, monday, color='red', alpha=0.1875)
 
-    draw_plots(df, ax1)    
+    draw_plots(df, ax1, balance_diff)    
 
     # Линии max_drawdown и margin_load на отдельной оси
     ax2.plot(df['date'], df['max_drawdown'], label='Deposit Load, %', color='red', alpha=0.4)
@@ -296,7 +299,7 @@ def generate_plot(account_id, trade_history):
     return image_base64
 
 
-def draw_plots(df, ax1):
+def draw_plots(df, ax1, balance_diff):
     # Получение первого значения
     first_date = df['date'].iloc[0]
     first_balance = df['balance'].iloc[0]
@@ -305,7 +308,7 @@ def draw_plots(df, ax1):
     formatted_number = f'{first_balance:,.0f}'.replace(',', ' ')
     ax1.annotate(f"${formatted_number}",
                  xy=(first_date, first_balance), 
-                 xytext=(first_date, first_balance * 1.06),
+                 xytext=(first_date, first_balance + balance_diff*0.1),
                  horizontalalignment='center',
                  color='darkblue',
                  fontweight='bold',
@@ -323,7 +326,7 @@ def draw_plots(df, ax1):
     formatted_number = f'{first_balance:,.0f}'.replace(',', ' ')
     ax1.annotate(f"${formatted_number}",
                  xy=(first_date, first_balance), 
-                 xytext=(first_date, first_balance * 0.94),
+                 xytext=(first_date, first_balance - balance_diff*0.1),
                  horizontalalignment='center',
                  color='darkblue',
                  fontweight='bold',

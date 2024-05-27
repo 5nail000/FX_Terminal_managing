@@ -4,7 +4,33 @@
 
 {% block content %}
 <div class="container mt-5 text-center" style="display: flex; flex-direction: column; align-items: center;">
-    <h1 style="width: 100%;">Account Balance Chart for: {{ account_login }}</h1>
+    <h1 style="width: 100%;">Account Balance Chart</h1>
+    <table>
+        <thead><tr><th>Login</th><th>Start balance</th><th>Final balance</th><th>Result</th><th>Percent</th></tr></thead>
+        <tbody>
+            <td>{{account.login}}</td>
+            <td>{{account.balance_in}}</td>
+            <td>{{account.balance_out}}</td>
+            <td>{{account.result}}</td>
+            <td>{{account.percent}}</td>
+        </tbody></table>
     <img src="data:image/png;base64,{{ image_base64 }}" />
 </div>
+{% endblock %}
+
+{% block style %}
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        text-align: center;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+</style>
 {% endblock %}
