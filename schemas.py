@@ -58,6 +58,7 @@ class AccountBase(BaseModel):
     description: str
     active: bool
     is_online: bool
+    is_draw: bool
 
 class AccountCreate(AccountBase):
     pass

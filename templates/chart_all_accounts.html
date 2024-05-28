@@ -25,13 +25,23 @@
                     <td>{{account.login}}</td>
                     <td>{{account.title}}</td>
                     <td>{{account.balance_in}}</td>
-                    <td>{{account.topup_sum}}</td>
-                    <td>{{account.withdrawal_sum}}</td>
+                    <td>{{account.topups}}</td>
+                    <td>{{account.withdrawals}}</td>
                     <td>{{account.balance_out}}</td>
                     <td>{{account.result}}</td>
                     <td>{{account.percent}}</td>
               </tr>
               {% endfor %}
+              <tr>
+                <td><b>{{summ_data.login}}</b></td>
+                <td><b>{{summ_data.title}}</b></td>
+                <td><b>{{summ_data.balance_in}}</b></td>
+                <td><b>{{summ_data.topups}}</b></td>
+                <td><b>{{summ_data.withdrawals}}</b></td>
+                <td><b>{{summ_data.balance_out}}</b></td>
+                <td><b>{{summ_data.result}}</b></td>
+                <td><b>{{summ_data.percent}}</b></td>
+              </tr>
             </tbody>
         </table>
         <img src="data:image/png;base64,{{ image_base64 }}" />
@@ -63,7 +73,7 @@
     .styled-table tr:last-child td {
         border-bottom: none; /* Отключить нижнюю границу для последних ячеек в колонках */
     }
-    
+
     .content-right ul {
         list-style-type: none;
         padding: 0;

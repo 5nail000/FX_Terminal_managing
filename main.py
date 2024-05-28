@@ -119,6 +119,11 @@ def show_chart_all_accounts(request: Request, db: Session = Depends(get_db)):
     image_base64 = executor.submit(generate_all_charts, accounts, trades).result()
 
     accounts_info = []
+    sum_balance_in  = 0
+    sum_balance_out = 0
+    sum_result = 0
+    sum_topup = 0
+    sum_withdrawal = 0
     # Перебор аккаунтов и их истории торгов для отображения графиков
     for account in accounts:
         if (account.active):
@@ -134,23 +139,39 @@ def show_chart_all_accounts(request: Request, db: Session = Depends(get_db)):
             balance_out_str = f'$ {round(trade_history[-1].balance_end):,.0f}'.replace(',', ' ')
             result_str = f'$ {round(trade_history[-1].balance_end - trade_history[0].balance_end):,.0f}'.replace(',', ' ')
             percent_str = f'{round((trade_history[-1].balance_end - trade_history[0].balance_end)/(trade_history[0].balance_end /100))} %'
-            topup_sum = f'$ {round(sum([trade.profit for trade in trade_history if trade.type_in == 2 and trade.profit > 0])):,.0f}'.replace(',', ' ')   # Подсчёт суммы всех пополнений
-            withdrawal_sum = f'$ {round(sum([trade.profit for trade in trade_history if trade.type_in == 2 and trade.profit < 0])):,.0f}'.replace(',', ' ')  # Подсчёт суммы всех снятий
+            topups = f'$ {round(sum([trade.profit for trade in trade_history if trade.type_in == 2 and trade.profit > 0])):,.0f}'.replace(',', ' ')   # Подсчёт суммы всех пополнений
+            withdrawals = f'$ {round(sum([trade.profit for trade in trade_history if trade.type_in == 2 and trade.profit < 0])):,.0f}'.replace(',', ' ')  # Подсчёт суммы всех снятий
 
             account = {
                 'login': account.login,
                 'title': account.title,
                 'balance_in': balance_in_str,
                 'balance_out': balance_out_str,
-                'topup_sum': topup_sum,
-                'withdrawal_sum': withdrawal_sum,
+                'topups': topups,
+                'withdrawals': withdrawals,
                 'result': result_str,
                 'percent': percent_str,
                 }
+            sum_balance_in  += round(trade_history[0].balance_end)
+            sum_balance_out += round(trade_history[-1].balance_end)
+            sum_result += round(trade_history[-1].balance_end - trade_history[0].balance_end)
+            sum_topup += round(sum([trade.profit for trade in trade_history if trade.type_in == 2 and trade.profit > 0]))
+            sum_withdrawal += round(sum([trade.profit for trade in trade_history if trade.type_in == 2 and trade.profit < 0]))
             
-            accounts_info.append(account)    
+            accounts_info.append(account)
 
-    return templates.TemplateResponse("chart_all_accounts.html", {"request": request, "image_base64": image_base64, "accounts_info": accounts_info})
+    summ_data = {
+        'login': 'All',
+        'title': 'Summ',
+        'balance_in': f'$ {sum_balance_in:,.0f}'.replace(',', ' '),
+        'balance_out': f'$ {sum_balance_out:,.0f}'.replace(',', ' '),
+        'topups': f'$ {sum_topup:,.0f}'.replace(',', ' '),
+        'withdrawals': f'$ {sum_withdrawal:,.0f}'.replace(',', ' '),
+        'result': f'$ {sum_result:,.0f}'.replace(',', ' '),
+        'percent': '',
+        }
+
+    return templates.TemplateResponse("chart_all_accounts.html", {"request": request, "image_base64": image_base64, "accounts_info": accounts_info, "summ_data": summ_data})
 
 
 @app.get("/account_chart/{account_login}", response_class=HTMLResponse)

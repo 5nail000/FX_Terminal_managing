@@ -24,6 +24,7 @@ class Account(Base):
     description = Column(String, nullable=True)
     active = Column(Boolean, default=True)
     is_online = Column(Boolean, default=False)
+    is_draw = Column(Boolean, default=True)
     trade_history = relationship("TradeHistory", back_populates="account")
 
     @property
