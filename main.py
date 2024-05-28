@@ -124,22 +124,30 @@ def show_account(account_login: int, request: Request, db: Session = Depends(get
     if not account_data:
         raise HTTPException(status_code=404, detail="Account not found")
 
-    # Создание будущего результата (future result) для выполнения в основном потоке
-    future = executor.submit(generate_plot, account_login, trade_history).result()
+    # Создание будущего результата (image_base64 result) для выполнения в основном потоке
+    image_base64 = executor.submit(generate_plot, account_login, trade_history).result()
+
+    titles = [(acc.title, acc.login) for acc in db.query(models.Account).filter(models.Account.active == True).all()]
 
     balance_in_str = f'$ {round(trade_history[0].balance_end):,.0f}'.replace(',', ' ')
     balance_out_str = f'$ {round(trade_history[-1].balance_end):,.0f}'.replace(',', ' ')
     result_str = f'$ {round(trade_history[-1].balance_end - trade_history[0].balance_end):,.0f}'.replace(',', ' ')
     percent_str = f'{round((trade_history[-1].balance_end - trade_history[0].balance_end)/(trade_history[0].balance_end /100))} %'
+    topup_sum = f'$ {round(sum([trade.profit for trade in trade_history if trade.type_in == 2 and trade.profit > 0])):,.0f}'.replace(',', ' ')   # Подсчёт суммы всех пополнений
+    withdrawal_sum = f'$ {round(sum([trade.profit for trade in trade_history if trade.type_in == 2 and trade.profit < 0])):,.0f}'.replace(',', ' ')  # Подсчёт суммы всех снятий
+    
     account = {
         'login': account_login,
+        'title': account_data.title,
         'balance_in': balance_in_str,
         'balance_out': balance_out_str,
+        'topup_sum': topup_sum,
+        'withdrawal_sum': withdrawal_sum,
         'result': result_str,
         'percent': percent_str,
                }
 
-    return templates.TemplateResponse("account_chart.html", {"request": request, "image_base64": future, "account": account})
+    return templates.TemplateResponse("account_chart.html", {"request": request, "image_base64": image_base64, "account": account, "titles": titles})
 
 
 @app.get("/accounts", response_class=HTMLResponse)

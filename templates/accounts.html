@@ -4,13 +4,9 @@
 
 {% block content %}
 <div class="container mt-5">
-  <h2>Accounts</h2>
-  <br>
-  <form id="account-form">
-    <button type="button" class="btn btn-primary btn-sm" id="add-account-btn">Добавить новый аккаунт</button>
-  </form>
+  <h2 style="width: 100%; text-align: center;">Accounts</h2>
   <br><br>
-  <div class="d-flex justify-content-center" style="width: 800px;">
+  <div class="d-flex justify-content-center">
     <table class="table table-striped mx-auto">
       <thead>
           <tr>
@@ -36,6 +32,9 @@
       </tbody>
     </table>
   </div>
+  <form id="account-form" style="width: 100%; text-align: right;">
+    <button type="button" class="btn btn-primary btn-sm" id="add-account-btn">Add New Account</button>
+  </form>
 </div>
 
 <!-- Модальное окно для редактирования аккаунта -->
@@ -291,9 +290,14 @@
     }
     .modal-dialog {
         max-width: 400px;  /* Установите максимальную ширину */
+        margin-right: 55%;
+        margin-top: 5%;
     }
     #password {
         font-family: monospace;
+    }
+    th, td {
+        white-space: nowrap;
     }
 {% endblock %}
 </style>

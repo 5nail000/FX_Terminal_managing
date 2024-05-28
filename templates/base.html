@@ -15,6 +15,7 @@
         .sidebar {
             width: 250px; /* Фиксированная ширина для боковой панели */
             flex-shrink: 0;
+            font-size: x-large;
         }
         .sidebar .nav-link {
             display: flex;
@@ -26,26 +27,10 @@
         }
         .container {
             flex-grow: 1;
+            margin-left: 2%;
         }
         .active {
             font-weight: bold;
-        }
-
-
-        /* Стили для четных строк */
-        .table-striped tbody tr:nth-of-type(even) {
-            background-color: #f0f0f0; /* Цвет фона для четных строк */
-        }
-
-        /* Стили для нечетных строк */
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: #d9d9d9; /* Цвет фона для нечетных строк */
-        }
-
-        /* Чтобы строчки не переносились */
-        .table td, th {
-            font-size: x-small;
-            white-space: nowrap;
         }
         {% block style %}{% endblock %}
     </style>
@@ -61,16 +46,16 @@
                     <a class="nav-link {% if request.url.path == '/' %}active{% endif %}" href="/">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if 'history' in request.url.path %}active{% endif %}" href="/get-history">Get History</a>
+                    <a class="nav-link {% if '/account' in request.url.path %}active{% endif %}" href="/accounts">Accounts</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.url.path == '/accounts' %}active{% endif %}" href="/accounts">Accounts</a>
+                    <a class="nav-link {% if 'history' in request.url.path %}active{% endif %}" href="/get-history">Get History</a>
                 </li>
             </ul>
         </div>
     </nav>
 
-    <div class="container mt-5" style="margin-left: 10rem;">
+    <div class="container mt-5">
         {% block content %}{% endblock %}
     </div>
 

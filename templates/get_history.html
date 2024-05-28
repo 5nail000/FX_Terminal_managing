@@ -4,9 +4,9 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Get Trading History</h2><br>
-    <form action="/show-history" method="post" style="width: 40%;">
-        <div class="form-check">
+    <h2 style="width: 100%; text-align: center;">Get Trading History</h2><br>
+    <form action="/show-history" method="post" style="text-align: center;">
+        <div class="form-check" >
             <input class="form-check-input" type="radio" name="history_option" id="current" value="current">
             <label class="form-check-label" for="current">
                 Current Logined
@@ -16,14 +16,14 @@
             <input class="form-check-input" type="radio" name="history_option" id="select" value="select" checked>
             <label class="form-check-label" for="select">
                 Select from Base
-            </label>
-            <select class="form-control mt-2 small-input" id="select-menu" name="selected_account">
+            </label><br>
+            <select class="form-control mt-2 small-input" id="select-menu" name="selected_account" style="display:inline-flex ;text-align: center;">
                 <!-- Options populating dynamically -->
                 {% for account in accounts %}
                     <option class="small-input" value="{{ account.login }}">{{ account.title }} ({{ account.login }})</option>
                 {% endfor %}
             </select>
-        </div><br>
+        </div>
         <button type="submit" class="btn btn-primary mt-3 btn-sm">Get History</button>
     </form>
 </div>
@@ -60,7 +60,7 @@
 <style>
     {% block style %}
         .small-input {
-            max-width: 350px; /* Установите максимальную ширину input-поля */
+            max-width:max-content; /* Установите максимальную ширину input-поля */
             font-size: 0.75rem; /* Уменьшите размер шрифта */
             margin-bottom: -0.5rem;
         }

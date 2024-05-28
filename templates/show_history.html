@@ -109,3 +109,23 @@
     });
 </script>
 {% endblock %}
+
+
+{% block style %}
+/* Стили для четных строк */
+.table-striped tbody tr:nth-of-type(even) {
+    background-color: #f0f0f0; /* Цвет фона для четных строк */
+}
+
+/* Стили для нечетных строк */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #d9d9d9; /* Цвет фона для нечетных строк */
+}
+
+/* Чтобы строчки не переносились */
+.table td, th {
+    font-size: x-small;
+    white-space: nowrap;
+}
+
+{% endblock %}

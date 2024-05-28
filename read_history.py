@@ -222,6 +222,8 @@ def generate_plot(account_id, trade_history):
     data = {
         'date': [acc.time_out for acc in trade_history],  # Убедитесь, что используете корректное поле даты
         'balance': [round(acc.balance_end) for acc in trade_history],
+        'type_in': [round(acc.type_in) for acc in trade_history],
+        'profit': [round(acc.profit) for acc in trade_history],
         'drawdown': [acc.balance_end - acc.draw_down for acc in trade_history],
         'max_drawdown': [acc.draw_down_level + acc.margin_load for acc in trade_history],
     }
@@ -240,18 +242,16 @@ def generate_plot(account_id, trade_history):
     # Минимальное значение для масштабирования баланса
     min_balance = df['drawdown'].min()
     balance_diff = df['balance'].max() - min_balance
-    balance_offset = min_balance - balance_diff*0.3  # 5% ниже минимального значения
-    print(min_balance)
-    print(balance_offset)
+    balance_offset = min_balance - balance_diff*0.2  # 5% ниже минимального значения
 
     # Построение графика
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10), gridspec_kw={'height_ratios': [3, 1]}, sharex=True)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), gridspec_kw={'height_ratios': [3, 1]}, sharex=True)
 
     # Линия баланса с масштабированием от минимального значения
-    ax1.plot(df['date'], df['balance'], label='Balance, $', color='blue')
+    ax1.plot(df['date'], df['balance'], label='Balance, $', color='darkblue')
     ax1.plot(df['date'], df['drawdown'], label='Drawdown', color='green', alpha=0.5)
     ax1.set_ylabel('Balance', color='blue')
-    ax1.set_ylim([balance_offset, df['balance'].max() + balance_diff* 0.3])  # Масштабирование от минимального значения + немного запаса
+    ax1.set_ylim([balance_offset, df['balance'].max() + balance_diff* 0.2])  # Масштабирование от минимального значения + немного запаса
     ax1.tick_params(axis='y', labelcolor='blue')
     ax1.grid(True)
     ax1.legend(loc='upper left')
@@ -322,7 +322,7 @@ def draw_plots(df, ax1, balance_diff):
     first_date = df['date'].iloc[-1]
     first_balance = df['balance'].iloc[-1]
 
-    # Добавление аннотации для первого значения
+    # Добавление аннотации для последнего значения
     formatted_number = f'{first_balance:,.0f}'.replace(',', ' ')
     ax1.annotate(f"${formatted_number}",
                  xy=(first_date, first_balance), 
@@ -332,9 +332,31 @@ def draw_plots(df, ax1, balance_diff):
                  fontweight='bold',
                  verticalalignment='top')
     
-    # Добавление выделенной точки на первое значение
+    # Добавление выделенной точки на последнее значение
     ax1.scatter([first_date], [first_balance], color='darkblue')
     ax1.plot(first_date, first_balance, 'ko', markersize=10, fillstyle='none')
+
+    # Точки пополнения и снятий
+    for i in range(len(df) - 1):
+        if df['type_in'].iloc[i] == 2 and df['profit'].iloc[i] > 0:
+            ax1.plot(df['date'].iloc[i], df['balance'].iloc[i], 'o', markersize=7, fillstyle='none', color = 'green')
+            ax1.annotate(f"+ ${df['profit'].iloc[i]}",
+                 xy=(df['date'].iloc[i], first_balance), 
+                 xytext=(df['date'].iloc[i], df['balance'].iloc[i] + balance_diff*0.05),
+                 horizontalalignment='center',
+                 color='green',
+                 fontweight='bold',
+                 verticalalignment='top')
+            
+        if df['type_in'].iloc[i] == 2 and df['profit'].iloc[i] < 0:
+            ax1.plot(df['date'].iloc[i], df['balance'].iloc[i], 'o', markersize=7, fillstyle='none', color = 'darkblue')
+            ax1.annotate(f"{df['profit'].iloc[i]}$",
+                 xy=(df['date'].iloc[i], first_balance), 
+                 xytext=(df['date'].iloc[i], df['balance'].iloc[i] + balance_diff*0.05),
+                 horizontalalignment='center',
+                 color='darkblue',
+                 fontweight='bold',
+                 verticalalignment='top')
 
 
 if __name__ == "__main__":

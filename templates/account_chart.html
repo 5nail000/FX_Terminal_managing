@@ -3,34 +3,92 @@
 {% block title %}Home - Admin Panel{% endblock %}
 
 {% block content %}
-<div class="container mt-5 text-center" style="display: flex; flex-direction: column; align-items: center;">
-    <h1 style="width: 100%;">Account Balance Chart</h1>
-    <table>
-        <thead><tr><th>Login</th><th>Start balance</th><th>Final balance</th><th>Result</th><th>Percent</th></tr></thead>
-        <tbody>
-            <td>{{account.login}}</td>
-            <td>{{account.balance_in}}</td>
-            <td>{{account.balance_out}}</td>
-            <td>{{account.result}}</td>
-            <td>{{account.percent}}</td>
-        </tbody></table>
-    <img src="data:image/png;base64,{{ image_base64 }}" />
+<div class="container mt-5" style="display: flex;">
+    <div class="content-left" style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+        <h3 style="width: 100%; text-align: center;">{{account.title}}</h2>
+        <h1 style="width: 100%; text-align: center;">Account Balance Chart</h1><br> 
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Login</th>
+                    <th>Start balance</th>
+                    <th>Top-Ups</th>
+                    <th>Withdrawals</th>
+                    <th>Final balance</th>
+                    <th>Result</th>
+                    <th>Percent</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{account.login}}</td>
+                    <td>{{account.balance_in}}</td>
+                    <td>{{account.topup_sum}}</td>
+                    <td>{{account.withdrawal_sum}}</td>
+                    <td>{{account.balance_out}}</td>
+                    <td>{{account.result}}</td>
+                    <td>{{account.percent}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <img src="data:image/png;base64,{{ image_base64 }}" />
+    </div>
+    <div class="content-right" style="flex: 1; margin-left: 50px;">
+        <h5 style="white-space: nowrap;">List of accounts:</h5>
+        <br>
+        <ul>
+            {% for title, login in titles %}
+                <li>
+                    {% if login == account.login %}
+                        <a href="/account_chart/{{login}}" style="font-weight: bold;">{{title}}</a>
+                    {% else %}
+                        <a href="/account_chart/{{login}}">{{title}}</a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
 </div>
 {% endblock %}
 
 {% block style %}
 <style>
-    table {
+    .styled-table {
         width: 100%;
         border-collapse: collapse;
     }
-    th, td {
+    .styled-table th, .styled-table td {
         padding: 8px 12px;
-        border: 1px solid #ddd;
         text-align: center;
+        font-size: 12pt;
     }
-    th {
+    .styled-table th {
         background-color: #f2f2f2;
+    }
+    .styled-table td, .styled-table th {
+        border-right: 1px solid #000; /* Правая граница для всех ячеек */
+        border-bottom: 1px solid #000; /* Нижняя граница для всех ячеек */
+    }
+    .styled-table td:last-child, .styled-table th:last-child {
+        border-right: none; /* Отключить правую границу для последних ячеек в рядах */
+    }
+    .styled-table tr:last-child td {
+        border-bottom: none; /* Отключить нижнюю границу для последних ячеек в колонках */
+    }
+    .content-right ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    .content-right li {
+        margin-bottom: 10px;
+    }
+    .content-right a {
+        text-decoration: none;
+        color: #007bff;
+        white-space: nowrap;
+    }
+    .content-right a:hover {
+        text-decoration: underline;
     }
 </style>
 {% endblock %}
