@@ -377,10 +377,11 @@ def generate_all_charts(accounts, trades):
                 'type_in': [round(trade.type_in) for trade in trades if trade.account_id == account.id],
                 'profit': [round(trade.profit) for trade in trades if trade.account_id == account.id],
                 'account_id': [trade.account_id for trade in trades if trade.account_id == account.id],
-            }
+                }
             df_trades = pd.DataFrame(data)
             df_trades['date'] = pd.to_datetime(df_trades['date'])
             ax.plot(df_trades['date'], df_trades['balance'], label=f'{account.title}')
+            draw_plots_4all(df_trades, ax)
 
     # Добавление легенды графика
     ax.legend()
@@ -421,6 +422,20 @@ def generate_all_charts(accounts, trades):
     plt.ion()
 
     return image_base64
+
+
+def draw_plots_4all(df, ax):
+    
+    # ax.plot(df['date'].iloc[0], df['balance'].iloc[0], 'ro', markersize=5, fillstyle='none')
+    # ax.plot(df['date'].iloc[-1], df['balance'].iloc[-1], 'ro', markersize=5, fillstyle='none')
+
+    # Точки пополнения и снятий
+    for i in range(len(df) - 1):
+        if df['type_in'].iloc[i] == 2 and df['profit'].iloc[i] > 0:
+            ax.plot(df['date'].iloc[i], df['balance'].iloc[i], 'o', markersize=5, fillstyle='none', color = 'green')
+            
+        if df['type_in'].iloc[i] == 2 and df['profit'].iloc[i] < 0:
+            ax.plot(df['date'].iloc[i], df['balance'].iloc[i], 'o', markersize=5, fillstyle='none', color = 'darkblue')
 
 
 if __name__ == "__main__":
