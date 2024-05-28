@@ -118,7 +118,9 @@ def show_chart_all_accounts(request: Request, db: Session = Depends(get_db)):
 
     image_base64 = executor.submit(generate_all_charts, accounts, trades).result()
 
-    return templates.TemplateResponse("chart_all_accounts.html", {"request": request, "image_base64": image_base64, "accounts": accounts})
+    
+
+    return templates.TemplateResponse("chart_all_accounts.html", {"request": request, "image_base64": image_base64, "accounts_info": accounts_info})
 
 
 @app.get("/account_chart/{account_login}", response_class=HTMLResponse)
