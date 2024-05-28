@@ -118,7 +118,37 @@ def show_chart_all_accounts(request: Request, db: Session = Depends(get_db)):
 
     image_base64 = executor.submit(generate_all_charts, accounts, trades).result()
 
-    
+    accounts_info = []
+    # Перебор аккаунтов и их истории торгов для отображения графиков
+    for account in accounts:
+        if (account.active):
+            trade_history = (
+                db.query(models.TradeHistory)
+                .filter(models.TradeHistory.account_id == account.id)
+                .filter(models.TradeHistory.time_out >= first_day_of_month)
+                .order_by(models.TradeHistory.time_out)
+                .all()
+                )
+
+            balance_in_str = f'$ {round(trade_history[0].balance_end):,.0f}'.replace(',', ' ')
+            balance_out_str = f'$ {round(trade_history[-1].balance_end):,.0f}'.replace(',', ' ')
+            result_str = f'$ {round(trade_history[-1].balance_end - trade_history[0].balance_end):,.0f}'.replace(',', ' ')
+            percent_str = f'{round((trade_history[-1].balance_end - trade_history[0].balance_end)/(trade_history[0].balance_end /100))} %'
+            topup_sum = f'$ {round(sum([trade.profit for trade in trade_history if trade.type_in == 2 and trade.profit > 0])):,.0f}'.replace(',', ' ')   # Подсчёт суммы всех пополнений
+            withdrawal_sum = f'$ {round(sum([trade.profit for trade in trade_history if trade.type_in == 2 and trade.profit < 0])):,.0f}'.replace(',', ' ')  # Подсчёт суммы всех снятий
+
+            account = {
+                'login': account.login,
+                'title': account.title,
+                'balance_in': balance_in_str,
+                'balance_out': balance_out_str,
+                'topup_sum': topup_sum,
+                'withdrawal_sum': withdrawal_sum,
+                'result': result_str,
+                'percent': percent_str,
+                }
+            
+            accounts_info.append(account)    
 
     return templates.TemplateResponse("chart_all_accounts.html", {"request": request, "image_base64": image_base64, "accounts_info": accounts_info})
 

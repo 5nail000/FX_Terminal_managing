@@ -20,7 +20,7 @@
                 </tr>
             </thead>
             <tbody>
-              {% for account in accounts %}
+              {% for account in accounts_info %}
               <tr>
                     <td>{{account.login}}</td>
                     <td>{{account.title}}</td>
@@ -35,17 +35,6 @@
             </tbody>
         </table>
         <img src="data:image/png;base64,{{ image_base64 }}" />
-    </div>
-    <div class="content-right" style="flex: 1; margin-left: 50px;">
-        <h5 style="white-space: nowrap;">List of accounts:</h5>
-        <br>
-        <ul>
-            {% for account in accounts %}
-                <li>
-                    <a href="/account_chart/{{account.login}}">{{account.title}}</a>
-                </li>
-            {% endfor %}
-        </ul>
     </div>
 </div>
 {% endblock %}
@@ -74,6 +63,7 @@
     .styled-table tr:last-child td {
         border-bottom: none; /* Отключить нижнюю границу для последних ячеек в колонках */
     }
+    
     .content-right ul {
         list-style-type: none;
         padding: 0;
