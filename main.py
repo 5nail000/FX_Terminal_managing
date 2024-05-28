@@ -102,6 +102,11 @@ async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
+@app.get("/total_view/", response_class=HTMLResponse)
+def show_account(request: Request, db: Session = Depends(get_db)):
+    return templates.TemplateResponse("total_view.html", {"request": request})
+
+
 @app.get("/account_chart/{account_login}", response_class=HTMLResponse)
 def show_account(account_login: int, request: Request, db: Session = Depends(get_db)):
     
