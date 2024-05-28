@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="display: flex;">
+    <div class="content-left" style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+        <h3 style="width: 100%; text-align: center;">Results of all accounts</h3>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Login</th>
+                    <th>Title</th>
+                    <th>Start balance</th>
+                    <th>Top-Ups</th>
+                    <th>Withdrawals</th>
+                    <th>Final balance</th>
+                    <th>Result</th>
+                    <th>Percent</th>
+                </tr>
+            </thead>
+            <tbody>
+              {% for account in accounts %}
+              <tr>
+                    <td>{{account.login}}</td>
+                    <td>{{account.title}}</td>
+                    <td>{{account.balance_in}}</td>
+                    <td>{{account.topup_sum}}</td>
+                    <td>{{account.withdrawal_sum}}</td>
+                    <td>{{account.balance_out}}</td>
+                    <td>{{account.result}}</td>
+                    <td>{{account.percent}}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+        </table>
+        <img src="data:image/png;base64,{{ image_base64 }}" />
+    </div>
+    <div class="content-right" style="flex: 1; margin-left: 50px;">
+        <h5 style="white-space: nowrap;">List of accounts:</h5>
+        <br>
+        <ul>
+            {% for account in accounts %}
+                <li>
+                    <a href="/account_chart/{{account.login}}">{{account.title}}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block style %}
+<style>
+    .styled-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .styled-table th, .styled-table td {
+        padding: 8px 12px;
+        text-align: center;
+        font-size: 12pt;
+    }
+    .styled-table th {
+        background-color: #f2f2f2;
+    }
+    .styled-table td, .styled-table th {
+        border-right: 1px solid #000; /* Правая граница для всех ячеек */
+        border-bottom: 1px solid #000; /* Нижняя граница для всех ячеек */
+    }
+    .styled-table td:last-child, .styled-table th:last-child {
+        border-right: none; /* Отключить правую границу для последних ячеек в рядах */
+    }
+    .styled-table tr:last-child td {
+        border-bottom: none; /* Отключить нижнюю границу для последних ячеек в колонках */
+    }
+    .content-right ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    .content-right li {
+        margin-bottom: 10px;
+    }
+    .content-right a {
+        text-decoration: none;
+        color: #007bff;
+        white-space: nowrap;
+    }
+    .content-right a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+
+
+
+<!--
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Account Charts</title>
+    <script type="text/javascript">
+        function renderChart() {
+            // JavaScript код для динамического обновления графиков
+        }
+    </script>
+</head>
+<body>
+    <div id="controls">-->
+        <!-- Список чекбоксов для аккаунтов --><!--
+        {% for account in accounts %}
+            <div>
+                <input type="checkbox" id="{{ account.login }}" name="accounts" value="{{ account.id }}">
+                <label for="{{ account.login }}">{{ account.login }}</label>
+            </div>
+        {% endfor %}
+         Дополнительный пункт "Summ of all" --><!--
+        <div>
+            <input type="checkbox" id="summ_all" name="summ_all" value="summ_all">
+            <label for="summ_all">Summ of all</label>
+        </div>
+        <button onclick="renderChart()">Update Chart</button>
+    </div>
+    <div>
+        <img src="data:image/png;base64,{{ image_base64 }}" />
+    </div>
+</body>
+</html>
+-->

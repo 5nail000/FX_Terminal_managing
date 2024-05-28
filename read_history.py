@@ -257,7 +257,7 @@ def generate_plot(account_id, trade_history):
     ax1.legend(loc='upper left')
     # ax1.set_title('Balance Over Time')
 
-    # Добавление вертикальных линий на каждый понедельник
+    # Добавление заливки на выходные
     for monday in mondays:
         saturday = monday - pd.DateOffset(days=2)
         # ax1.axvline(monday, color='purple', linestyle='--', label=None, alpha=0.65)
@@ -357,6 +357,70 @@ def draw_plots(df, ax1, balance_diff):
                  color='darkblue',
                  fontweight='bold',
                  verticalalignment='top')
+
+
+def generate_all_charts(accounts, trades):
+
+    # Отключение интерактивного режима Matplotlib
+    plt.ioff()
+
+    # Построение графика
+    fig, ax = plt.subplots(1,1, figsize=(12, 8), sharex=True)
+
+    # Перебор аккаунтов и их истории торгов для отображения графиков
+    for account in accounts:
+        if account.active:
+            # Преобразуем данные в DataFrame
+            data = {
+                'date': [trade.time_out for trade in trades if trade.account_id == account.id],  # Убедитесь, что используете корректное поле даты
+                'balance': [round(trade.balance_end) for trade in trades if trade.account_id == account.id],
+                'type_in': [round(trade.type_in) for trade in trades if trade.account_id == account.id],
+                'profit': [round(trade.profit) for trade in trades if trade.account_id == account.id],
+                'account_id': [trade.account_id for trade in trades if trade.account_id == account.id],
+            }
+            df_trades = pd.DataFrame(data)
+            df_trades['date'] = pd.to_datetime(df_trades['date'])
+            ax.plot(df_trades['date'], df_trades['balance'], label=f'{account.title}')
+
+    # Добавление легенды графика
+    ax.legend()
+    ax.set_ylabel('Balance', color='blue')
+    ax.tick_params(axis='y', labelcolor='blue')
+    ax.grid(True)
+
+
+    # Преобразуем данные в DataFrame
+    data = {
+        'date': [trade.time_out for trade in trades],  # Убедитесь, что используете корректное поле даты
+        'balance': [round(trade.balance_end) for trade in trades],
+        'type_in': [round(trade.type_in) for trade in trades],
+        'profit': [round(trade.profit) for trade in trades],
+        'account_id': [trade.account_id for trade in trades],
+    }
+    df_trades = pd.DataFrame(data)
+    df_trades['date'] = pd.to_datetime(df_trades['date'])
+    # Получаем начальную и конечную даты из DataFrame
+    start_date = df_trades['date'].min().normalize()
+    end_date = df_trades['date'].max().normalize()
+    # Формируем список всех понедельников между начальной и конечной датами
+    mondays = pd.date_range(start=start_date, end=end_date, freq='W-MON').date
+    # Добавление заливки на выходные
+    for monday in mondays:
+        saturday = monday - pd.DateOffset(days=2)
+        # ax1.axvline(monday, color='purple', linestyle='--', label=None, alpha=0.65)
+        ax.axvspan(saturday, monday, color='red', alpha=0.1875)
+
+    # Конвертирование графика в изображение
+    buf = BytesIO()
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])  # Для более плотного расположения элементов и оставления места для общего заголовка
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+    plt.close(fig)
+
+    plt.ion()
+
+    return image_base64
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ import json
 import base64
 from io import BytesIO
 from datetime import datetime
-from read_history import get_history, get_current_account, generate_plot
+from read_history import get_history, get_current_account, generate_plot, generate_all_charts
 from cryptography.fernet import Fernet
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -42,7 +42,8 @@ class DateTimeEncoder(json.JSONEncoder):
         if isinstance(obj, datetime):
             return obj.isoformat()
         return super().default(obj)
-    
+
+
 # Пользовательская функция для преобразования строк с датой в объекты datetime
 def date_decoder(obj):
     date_keys = ['time_in', 'time_out']
@@ -108,8 +109,16 @@ def show_account(request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/chart_all_accounts/", response_class=HTMLResponse)
-def show_account(request: Request, db: Session = Depends(get_db)):
-    return templates.TemplateResponse("chart_all_accounts.html", {"request": request})
+def show_chart_all_accounts(request: Request, db: Session = Depends(get_db)):
+
+    first_day_of_month = datetime.now().replace(day=1)
+
+    accounts  = db.query(models.Account).all()
+    trades  =   db.query(models.TradeHistory).filter(models.TradeHistory.time_out >= first_day_of_month).order_by(models.TradeHistory.time_out).all()
+
+    image_base64 = executor.submit(generate_all_charts, accounts, trades).result()
+
+    return templates.TemplateResponse("chart_all_accounts.html", {"request": request, "image_base64": image_base64, "accounts": accounts})
 
 
 @app.get("/account_chart/{account_login}", response_class=HTMLResponse)
